@@ -189,3 +189,226 @@ After the script has finished, open the MigrationSettings.json file by running c
 Save the file
 Continue to the next step.
 
+
+Modernizing .NET using Azure Migrate and GitHub Copilot tools
+1 Hr 18 Min Remaining 
+Migrate the application
+In this step of the lab, you will migrate your applications to Azure App Service using a PowerShell script. The script sizes the application, creates an app service plan and an app service inside of an existing resource group.
+
+Go back to the PowerShell window that's already open. Run .\Invoke-SiteMigration.ps1 -MigrationSettingsFilePath "MigrationSettings.json" -Force
+After the script completes, you can navigate to the Azure Portal to view the migrated application.
+
+Open Microsoft Edge browser.
+
+Please navigate to https://portal.azure.com .
+
+Username: User1-51501459@LODSPRODMCA.onmicrosoft.com
+
+Password: eS0qNr+D8!
+
+Once you have logged in to the Azure Portal , go to Resource Groups by clicking the hamburger menu on top left.
+rgs.png
+
+You should now see a resource group named "Build2025" with an app service plan, two app service web apps, an Azure Open AI , Azure App Insights resource and an Azure KeyVault. The app service is now hosting your web application, but it is not yet fully functional.
+
+
+rgign24.png
+ignite24Resources.png
+
+Continue to the next step.
+
+Modernizing .NET using Azure Migrate and GitHub Copilot tools
+1 Hr 14 Min Remaining 
+Modernize your application with Azure Open AI and App Service Platform Features
+We have migrated the two web applications seen in the "Build2025" resource group above. The web app starting with prefix devshop is the primary web application of a fictious ecommerce company named devshop . The devshop company plans to introduce Gen AI capabilities based on Azure Open AI for its devshop web application without completely rewriting and redesigning the existing web application.
+
+We have also migrated the aoiapp web app above. This web application contains the Azure Open AI integration and gets displayed when user clicks on "Chat with AI Assistant" button on the productdetails.aspx page.
+
+
+productdetails.jpg
+
+Steps 1-4 in this section are optional.
+
+To explore the Azure OpenAI integration navigate to Visual Studio and explore the devShopAOIdapp project. Code changes for Azure OpenAI integration are implemented and no further changes are required.
+
+In this project open the chatbot.aspx page which further references ChatController.cs file.
+
+Following are the Key points about Azure Open AI integration within the ChatController.cs file:
+
+Install Azure OpenAI client library for .NET (https://learn.microsoft.com/en-us/dotnet/api/overview/azure/ai.openai-readme?view=azure-dotnet ) and Azure idenity NuGet pacakage https://www.nuget.org/packages/Azure.Identity
+Fetch required Azure Open AI endpoint stored in Azure key Vault
+Create Default Azure Credentials to authenticate against the Azure Open AI endpoint using the System Identity (aoiapp )
+Finally use ChatClient and ChatCompletion classes to introduce interactive chat capabilities for the devshop web app
+Continue to the next step.
+
+
+packages>
+  <package id="Azure.AI.OpenAI" version="2.2.0-beta.4" targetFramework="net48" />
+  <package id="Azure.Core" version="1.45.0" targetFramework="net48" />
+  <package id="Azure.Identity" version="1.14.0-beta.3" targetFramework="net48" />
+  <package id="log4net" version="3.0.5-preview.2" targetFramework="net48" />
+
+
+
+
+using Azure;
+using Azure.AI.OpenAI;
+using Azure.Identity;
+using OpenAI;
+using OpenAI.Chat;
+using System;
+using System.Configuration;
+using System.Globalization;
+using System.Threading.Tasks;
+using System.Web.Http;
+  
+namespace devShopAOIdapp
+{
+    public class ChatController : ApiController
+    {
+        string endpoint = ConfigurationManager.AppSettings["AOIEndpoint"];
+        string model = ConfigurationManager.AppSettings["DepName"];
+        string systemMessage = ConfigurationManager.AppSettings["SystemMessage"];
+  
+        AzureOpenAIClient client;
+  
+        #region IdenityCredentials
+        public ChatController()
+        {
+            var credential = new DefaultAzureCredential();
+            client = new AzureOpenAIClient(new Uri(endpoint), credential);
+  
+        }
+  
+        #endregion
+  
+        #region ChatCompletion
+  
+        [HttpGet]
+        public async Task<string> getResponse(string message)
+        {
+            try
+            {
+                ChatClient chatClient = client.GetChatClient(model);
+  
+                ChatCompletion completion = chatClient.CompleteChat(new SystemChatMessage(systemMessage), new UserChatMessage(message));
+  
+  
+                var output = completion.Content[0].Text;
+  
+                return output;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message + ex.StackTrace;
+            }
+  
+        }
+        #endregion
+    }
+}
+
+
+
+Modernizing .NET using Azure Migrate and GitHub Copilot tools
+1 Hr 7 Min Remaining 
+Monitoring
+A huge benefit of hosting your site in Azure is the ability to monitor your application and track specific metrics. Azure App Service allows you to easily enable monitoring through the portal to connect your site to Application Insights. Application Insights logs metrics and application telemetry data with features such as Live Metrics, Usage and Smart detection. Follow the steps below to enable Application Insights
+
+Go to App Service (web app prefixed with devshop) in the "Build2025" resource group. Go to Monitoring then to Application Insights. Click the Turn on Application Insights button
+log4appinsh_1.jpg
+Check the radio button for Select existing resource. Select the "Application Insights" resource with the name prefixed with lab343.
+log4appinsh_2.jpg
+Hit Apply.
+log4appinsh_3.jpg
+Once Application Insight resource is connected application logs from Log4Net will now be populated. Navigate to "Application Insight" resource prefixed with lab343 and click "Transaction Search" under "Investigate" menu. Click on "see all data in last 24 hours".
+log4appinsh_4.jpg
+You should now be able to view application logs. There may be some delay for logs to be populated and displayed. To populate logs browse home page of the "devshop" web app migrated in the previous steps.
+log4appinsh_5.jpg
+This step showcased important "app modernization" construct where in migrated web app are able to publish application logs to Application Insights without making code changes.
+
+You've now enabled monitoring! Move onto the next steps.
+
+Modernizing .NET using Azure Migrate and GitHub Copilot tools
+1 Hr 6 Min Remaining 
+Explore Azure Resources and Establish Connectivity with Azure Open AI Resource
+Go to App Service web app prefixed with aoiapp within the "Build2025" resource group.
+
+Create a System Assigned Managed Identity for the aoi webapp (App Service web app starting with the prefix aoiapp) through App Service by going to Settings then Identity inside your App Service in the Azure Portal. Turn the button for Status to On and hit Save. Click Yes to save the changes.
+system_identity.jpg.
+Go to Azure KeyVault prefixed with "lab343" by navigating to the Build2025 resource group.
+Go to Access control (IAM), click Add then Add role assignment
+Select the KeyVault Secrets User role.
+On the next screen, select Managed identity Click +Select members and then select "App Service". You should now see Managed Identity for the webapp prefixed with "aoiapp" from the dropdown and hit Select
+Click Review + assign twice. Now your App Service has access to read the secrets in your KeyVault.
+Similarly click Add and then Add role assignment select the KeyVault Secrets Officer role. Click +Select members
+On the next screen, search for your Azure username,User1-51501459@LODSPRODMCA.onmicrosoft.com.
+Click Review + assign twice. Now you have access to manage the secrets in your KeyVault.
+Go to Build2025 resource group and click the Azure Open AI resource prefixed with "lab343" and ending with "openai".
+openai_1.jpg
+
+Click on "Keys and Endpoint" under "Resource Management" menu. Click "Show Keys"
+openai_4.jpg
+Open a notepad. Copy and paste the values for "Endpoint" and "Key 1". we will require these for upcoming steps.
+Go to Access control (IAM), click Add then Add role assignment
+Select the Cognitive Services OpenAI User role.
+On the next screen, select Managed identity Click +Select members then select your App Service. You should now see Managed Identity for the webapp prefixed with "aoiapp" from the dropdown and hit Select
+Click Review + assign twice. Now your App Service has access to the Azure OpenAI resource.
+Click on "Go to Azure AI Foundry Portal" on the "Overview" menu . Azure OpenAI Studio opens up in a new browser tab. This step is optional
+
+Go to "Deployments" under Shared Resources on the left menu
+
+openai_2.jpg
+Click on the deployed model "Name".
+Explore various model properties like "Content filter", "Rate Limit" . Do not make changes to the existing config.
+openai_3.jpg
+Continue to the next step.
+
+Modernizing .NET using Azure Migrate and GitHub Copilot tools
+1 Hr 4 Min Remaining 
+Create secrets in Azure Key Vault and create corresponding App Service App Settings.
+Create secrets in the KeyVault by going to your KeyVault prefixed with lab343 then look for Secrets under Objects.
+Select Generate/Import. Create a secret named AOIEndpoint. The secret value should be the Azure OpenAI Endpoint that you copied earlier in the format "https://YourAOIName.openai.azure.com/". Hit Create once you've filled out the secret name and value. Once created click the secret named AOIEndpoint and then click the current version of this secret. Copy and paste the "Secret Identifier" for this secret in the notepad . The format will be similar to " https:// YourKVName.vault.azure.net/secrets/AOIEndpoint/…."
+Navigate to the App Service web app prefixed with aoiwebapp .Go to the Settings and click "Environmant Variables". You will create single app setting.
+Click +Add . Name will be AOIEndpoint and value will be @Microsoft.KeyVault(SecretUri=https://<Your KeyVault name>.vault.azure.net/secrets/<Your Secret name>/). Use the value you pasted in the notepad for corresponding Key Vault secret URI.Click Apply. (Ensure trailing / is added when providing App Setting Value.)
+aoiwebapp_appsettings.jpg
+Click Apply . This will save the app settings and restart the web app.
+Navigate to web app prefixed with devshop. Go to the Settings and click "Environment Variables". You will create 1 app setting.
+Click +Add . Name will ChatbotURL and value will be "https://aoiapp###.azurewebsites.net/chatbot.aspx". Please subsitute correct name of the "aoiapp" web app.Click Apply
+Click Apply . This will save the app settings and restart the web app.
+Once the "devshop###" app has successfully restarted, navigate to the URL for your application and you should be able to see the fully functional app with products listed on the site. Click any product and then click "CHAT WITH AI ASSISTANT!!". A new modal popup will open. Type a query and press submit. You should receive response from Azure OpenAI endpoint.
+
+Continue to the next step.
+
+Modernizing .NET using Azure Migrate and GitHub Copilot tools
+1 Hr 4 Min Remaining 
+Automatic scaling
+In local .NET applications hosted on IIS, you handle scaling through your Application Pools. Azure App Service offers both vertical scaling (upgrading your App Service Plan) and horizontal scaling (creating multiple instances of your app). For the purposes of this lab, we are going to focus on horizontal scaling.
+
+Automatic scaling allows you to be prepared for unexpected spikes in traffic to your site. Let's say your devshop site has unexpected spikes in traffic due an ongoing promotion. Enable automatic scaling by following the steps below to to handle the traffic.
+
+Go to App Service (web app prefixed with devshop) in the "Build2025" resource group. Navigate to Settings then Scale out (App service plan).
+automatic_scaling.png
+Configure scaling with the following settings:
+Scale out method: Automatic
+Maximum burst: 3
+Always ready instances: 1
+Enforce scale out limit: On
+Maximum scale limit: 3
+Hit Save at the top of the screen. You just setup automatic scaling!
+
+Modernizing .NET using Azure Migrate and GitHub Copilot tools
+1 Hr 4 Min Remaining 
+Health Check
+Azure App Service has a health check feature that helps increase your application's availability by rerouting requests away from unhealthy instances, and replacing instances if they remain unhealthy. Follow the below steps to configure a health check for your migrated application on App Service.
+
+Go to App Service (web app prefixed with devshop) in the "Build2025" resource group.
+Go to the Monitoring section and then Health check
+Check the enable box to configure the health check.
+Configure the health check as /.
+Click Save at the top.
+healthcheck.jpg
+You just enabled a health check for your migrated application!
+
+You have successfully completed first part of this lab excercise.
+
