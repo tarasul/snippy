@@ -112,4 +112,668 @@ How to interact with an AI-powered chat application
 Next Steps
 Now that you've created and run your AI Web Chat application, proceed to Explore the Template Code to understand the underlying architecture and code structure of the application.
 
+
+
+Building GenAI Apps in C#: AI Templates, GitHub Models, Azure OpenAI & More
+30 Minutes Remaining 
+Convert from GitHub Models to Azure OpenAI
+In this lab
+In this lab, you will learn how to migrate your application from using GitHub Models during development to Azure OpenAI for production. You'll understand how the common interfaces in Microsoft Extensions for AI make this migration seamless, create an Azure OpenAI resource, deploy models, and update your application's configuration.
+
+Understand the IChatClient as a common interface across services
+Microsoft Extensions for AI provides common interfaces that work across different AI providers:
+
+IChatClient for text generation
+IEmbeddingGenerator for creating vector embeddings
+ITextCompletion for text completions
+These interfaces allow you to switch between AI providers without changing your application code. For example, when using IChatClient:
+
+csharp
+public class MyService
+{
+    private readonly IChatClient _chatClient;
+
+    public MyService(IChatClient chatClient)
+    {
+        _chatClient = chatClient;
+    }
+
+    public async Task<string> GetResponseAsync(string userMessage)
+    {
+        var response = await _chatClient.GetResponseAsync(
+            new[] {
+                new ChatMessage(ChatRole.System, "You are a helpful assistant."),
+                new ChatMessage(ChatRole.User, userMessage)
+            });
+
+        return response.Text;
+    }
+}
+The same code works whether the IChatClient is implemented by GitHub Models, Azure OpenAI, or another provider.
+
+Create the Azure OpenAI resource
+To use Azure OpenAI, you need to set up resources in Azure:
+
+Create an Azure OpenAI resource: - Navigate to the Azure portal (https://portal.azure.com)
+Click "Create a resource" and search for "Azure OpenAI"
+Fill in the required details:
+Subscription: Will be pre-selected based on your Azure account
+Resource group: Select an existing resource group if you are doing this in a lab or create a new one (e.g., "rg-mygenaiapp")
+Resource name: Choose a unique name for your Azure OpenAI resource (e.g., "mygenaiapp-openai")
+Region: Select a region close to you (e.g., "East US" or "West Europe"). For Build 2025, we recommend using "West US 3"
+Pricing tier: Select "Standard" (this is the only option available for Azure OpenAI)
+Click "Next" on the following screens (leaving the default settings) and then "Create"
+FOR BUILD 2025 LAB ATTENDEES: You MUST select the "rg-mygenaiapp" resource group that has already been created for you. Do not create a new resource group. Permissions are restricted to only allow creating resources in this resource group.
+
+Deploy the gpt-4o-mini model for chat completions
+After creating your Azure OpenAI resource, you need to deploy the models:
+
+Navigate to your Azure OpenAI resource by clicking the "Explore Azure AI Foundry portal" button or browsing to https://ai.azure.com
+Select "Deployments" from the left menu
+Click "+ Deploy model" button
+Select the "Deploy base model" option
+Select the model "gpt-4o-mini" for chat completions (you can use the search filter to narrow the list down)
+Leave the default deployment name and type values ("gpt-4o-mini" and Global Standard)
+Click "Deploy"
+Deploy the text-embedding-3-small model for embeddings
+Follow the same process to deploy the embedding model:
+
+Select "Deployments" from the left menu
+Click "+ Deploy model" button
+Select the "Deploy base model" option
+Select the model "text-embedding-3-small" for embeddings (again using search to filter if desired)
+Leave the default deployment name and type values ("text-embedding-3-small" and Global Standard)
+Click "Deploy"
+Obtain the Endpoint and API Keys
+To connect your application to Azure OpenAI, you need the endpoint and API key:
+
+Open one of your deployments from the above steps if you have closed it
+Locate the Endpoint box in the upper left
+Copy just the first part of the Endpoint Target URI (it will look like https://YOUR_RESOURCE_NAME.openai.azure.com/)
+Copy the key (you can use the copy button for this)
+Update the connection strings
+Now you'll update your application's connection string to use Azure OpenAI instead of GitHub Models:
+
+In the Solution Explorer, right-click on the GenAiLab.AppHost project and select "Manage User Secrets"
+
+In the secrets.json file, update the connection string:
+
+json
+   {
+     "ConnectionStrings:openai": "Endpoint=https://YOUR_RESOURCE_NAME.openai.azure.com/;Key=YOUR_API_KEY"
+   }
+Replace YOUR_RESOURCE_NAME with your Azure OpenAI resource name and YOUR_API_KEY with the API key you copied.
+
+Add new Product PDFs for ingestion
+To test the new Azure OpenAI integration, let's add the sample product PDF manuals that are included with the lab:
+
+In the Solution Explorer, navigate to the GenAiLab.Web/wwwroot/Data folder
+
+Right-click on the Data folder and select "Add" > "Existing Item…"
+
+Browse to the /lab/manuals directory in your project folder
+
+Select all PDF files (Ctrl+A)
+
+Click "Add" to copy these files into your project
+
+These sample manual PDFs include a variety of products such as:
+
+Example_Backpack.pdf
+Example_Camera.pdf
+Example_Camping_Lantern.pdf
+Example_Double_Hammock.pdf
+Example_Energy_Bars.pdf
+Example_Survival_Medkit.pdf
+Example_Water_Filtration.pdf
+And many other product manuals that will provide rich content for testing the AI capabilities.
+
+Note: Ingesting all of these PDFs requires processing a large number of tokens, which would likely exceed the free token limits when using GitHub Models. This is why we're adding these resources after switching to Azure OpenAI, which provides higher token limits and better scaling options. This demonstrates an important consideration when choosing between different AI providers - understanding their resource constraints and cost models is crucial for production applications.
+
+Run the application
+Now let's run the application with Azure OpenAI integration:
+
+Make sure the GenAiLab.AppHost project is set as the startup project
+
+Press F5 or click the "Start Debugging" button in Visual Studio
+
+The .NET Aspire dashboard will open in your browser
+
+Shortly after, the web application will launch in another browser tab
+
+Test the chat functionality with Azure OpenAI by asking questions like:
+
+"What products do you have information about?"
+"Tell me about the emergency survival kit"
+"What's the most useful feature of the solar power bank?"
+Notice how the responses now come from Azure OpenAI rather than GitHub Models
+
+What You've Learned
+How Microsoft Extensions for AI provides common interfaces across AI providers
+How to create an Azure OpenAI resource in the Azure portal
+How to deploy models for chat completions and embeddings
+How to obtain the endpoint and API keys for Azure OpenAI
+How to update your application to use Azure OpenAI instead of GitHub Models
+How to test the application with Azure OpenAI integration
+Next Steps
+Now that you've migrated your application to use Azure OpenAI, proceed to Write a New Products Page to enhance your application with a Products feature that uses AI to generate product descriptions and categories.
+
+Congratulations on implementing Azure to your project! Click Next to advance to enhance your page with the Products Page.
+
 Now, you've created the project, click Next to advance to explore the template..
+
+
+Building GenAI Apps in C#: AI Templates, GitHub Models, Azure OpenAI & More
+29 Minutes Remaining 
+Explore the Template Code
+In this lab
+In this lab, you'll explore the code structure of the AI Web Chat template. You'll learn about the different services configured in the .NET Aspire AppHost, understand the application configuration in the Web project, explore how IChatClient is configured and used, and dive into Microsoft Extensions for Vector Data.
+
+Services in .NET Aspire AppHost Program.cs
+Let's start by examining the Program.cs file in the GenAiLab.AppHost project:
+
+csharp
+var builder = DistributedApplication.CreateBuilder(args);
+
+// You will need to set the connection string to your own value
+// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
+//   cd this-project-directory
+//   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://models.inference.ai.azure.com;Key=YOUR-API-KEY"
+var openai = builder.AddConnectionString("openai");
+
+var vectorDB = builder.AddQdrant("vectordb")
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var ingestionCache = builder.AddSqlite("ingestionCache");
+
+var webApp = builder.AddProject<Projects.GenAiLab_Web>("aichatweb-app");
+webApp.WithReference(openai);
+webApp
+    .WithReference(vectorDB)
+    .WaitFor(vectorDB);
+webApp
+    .WithReference(ingestionCache)
+    .WaitFor(ingestionCache);
+
+builder.Build().Run();
+Key components in the AppHost:
+
+OpenAI Connection: Added as a connection string reference that will be passed to the web app
+Qdrant Vector Database: Added as a containerized service with persistent storage
+SQLite Ingestion Cache: Added as a lightweight database for caching ingestion state
+Web Application: The main app that references all other services
+Application configuration in Web Program.cs
+Now let's look at the Program.cs file in the GenAiLab.Web project:
+
+csharp
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using GenAiLab.Web.Components;
+using GenAiLab.Web.Services;
+using GenAiLab.Web.Services.Ingestion;
+using OpenAI;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+var openai = builder.AddGitHubModels();
+openai.AddChatClient("gpt-4o-mini")
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
+openai.AddEmbeddingGenerator("text-embedding-3-small");
+
+builder.AddQdrantClient("vectordb");
+
+builder.Services.AddSingleton<IVectorStore, QdrantVectorStore>();
+builder.Services.AddScoped<DataIngestor>();
+builder.Services.AddSingleton<SemanticSearch>();
+builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
+
+var app = builder.Build();
+IngestionCacheDbContext.Initialize(app.Services);
+
+// Configure the HTTP request pipeline.
+// ...
+
+app.UseStaticFiles();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+// By default, we ingest PDF files from the /wwwroot/Data directory. You can ingest from
+// other sources by implementing IIngestionSource.
+await DataIngestor.IngestDataAsync(
+    app.Services,
+    new PDFDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
+
+app.Run();
+Key components in the Web Program.cs:
+
+Service Registration: Setting up Razor components, service defaults, etc.
+GitHub Models Setup:
+Adding GitHub Models as the AI provider
+Configuring a chat client with the "gpt-4o-mini" model
+Setting up an embedding generator with "text-embedding-3-small" model
+Qdrant Client: Connecting to the Qdrant vector database
+Service Implementations:
+Vector store
+Data ingestor
+Semantic search
+Ingestion cache database context
+Data Ingestion: Processing PDF files from the wwwroot/Data directory
+IChatClient configuration and use
+The IChatClient interface is a key part of Microsoft Extensions for AI. Let's look at how it's configured and used:
+
+csharp
+// Configuration in Program.cs
+var openai = builder.AddGitHubModels();
+openai.AddChatClient("gpt-4o-mini")
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
+The IChatClient is used in the Chat.razor component to handle user messages and generate AI responses:
+
+csharp
+@code {
+    [Inject]
+    private IChatClient ChatClient { get; set; } = default!;
+
+    private async Task HandleUserMessageAsync(string userMessage)
+    {
+        // ...
+        var response = await ChatClient.GetResponseAsync(
+            SystemPrompt, 
+            chatHistory.Select(m => new ChatMessage(m.Role, m.Content)).ToArray());
+        // ...
+    }
+}
+Key points about IChatClient:
+
+It provides a consistent interface for interacting with any AI service
+It abstracts away the specifics of different AI providers
+It supports both one-off responses and conversation history
+It enables function calling and other advanced features
+Microsoft Extensions for Vector Data in Web.Services.SemanticSearchRecord
+The template uses Microsoft Extensions for Vector Data to implement semantic search. Let's look at the SemanticSearchRecord.cs file:
+
+csharp
+namespace GenAiLab.Web.Services;
+
+public class SemanticSearchRecord
+{
+    public required string FileName { get; set; }
+    public required string Text { get; set; }
+}
+This simple class represents the data stored in the vector database:
+
+FileName: The source document's name
+Text: A chunk of text from the document
+Each record is stored with its corresponding embedding vector
+The SemanticSearch.cs file shows how these records are queried:
+
+csharp
+public class SemanticSearch(
+    IEmbeddingGenerator<string, Embedding<float>> embedder,
+    IVectorStore vectorStore,
+    ILogger<SemanticSearch> logger)
+{
+    private const string CollectionName = "data-genailab-ingested";
+
+    public async Task<SearchResults> Search(string query)
+    {
+        try
+        {
+            // Generate an embedding vector for the query
+            var queryEmbedding = await embedder.GenerateEmbeddingVectorAsync(query);
+
+            // Search the vector database for similar document chunks
+            var collection = vectorStore.GetCollection<Guid, SemanticSearchRecord>(CollectionName);
+            var searchResults = await collection.VectorizedSearchAsync(
+                queryEmbedding,
+                new VectorSearchOptions<SemanticSearchRecord> { Top = 5 }
+            );
+
+            // Process and return results
+            var results = new List<DocumentResult>();
+            await foreach (var match in searchResults.Results)
+            {
+                results.Add(new DocumentResult
+                {
+                    FileName = match.Record.FileName,
+                    Text = match.Record.Text,
+                    Score = match.Score
+                });
+            }
+
+            return new SearchResults(results);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error performing semantic search");
+            return new SearchResults(new List<DocumentResult>());
+        }
+    }
+}
+Embedding model use in PDFDirectorySource.CreateRecordsForDocumentAsync
+Let's examine how embeddings are generated during document ingestion in the DataIngestor.cs file:
+
+csharp
+private async Task IngestFromSourceAsync(IIngestionSource source)
+{
+    // Create or get the vector collection
+    var vectorCollection = _vectorStore.GetCollection<Guid, SemanticSearchRecord>(CollectionName);
+
+    // Get documents from the source
+    var documents = await source.GetDocumentsAsync();
+    foreach (var document in documents)
+    {
+        // Split the content into chunks
+        var chunks = SplitTextIntoChunks(document.Content, chunkSize: 1000);
+
+        // For each chunk, create a record with embeddings
+        foreach (var chunk in chunks)
+        {
+            // Skip empty chunks
+            if (string.IsNullOrWhiteSpace(chunk)) continue;
+
+            // Generate embedding for the chunk
+            var embedding = await _embedder.GenerateEmbeddingVectorAsync(chunk);
+
+            // Create and store the record
+            var record = new SemanticSearchRecord
+            {
+                FileName = document.FileName,
+                Text = chunk
+            };
+
+            // Add the record to the vector database
+            await vectorCollection.UpsertAsync(Guid.NewGuid(), record, embedding.Data.ToArray());
+        }
+    }
+}
+Key steps in the embedding workflow:
+
+Documents are retrieved from a source (like PDFs)
+Each document is split into smaller chunks for better search precision
+For each chunk, an embedding vector is generated using IEmbeddingGenerator
+The text chunk and its embedding are stored in the vector database
+During search, query text is also converted to an embedding, and vector similarity is used to find relevant chunks
+What You've Learned
+How services are configured and orchestrated in .NET Aspire
+How the main application is structured and configured
+How IChatClient is set up and used for interacting with AI models
+How vector embeddings are used to implement semantic search
+How document ingestion works with embeddings and vector storage
+Next Steps
+Now that you understand the code structure of the template, proceed to Convert from GitHub Models to Azure OpenAI to learn how to migrate your application from using GitHub Models to Azure OpenAI for production use.
+
+Now, you've used the template, click Next to advance to go from GitHub Models to Azure OpenAI.
+
+
+Building GenAI Apps in C#: AI Templates, GitHub Models, Azure OpenAI & More
+28 Minutes Remaining 
+Deploy to Azure
+In this lab
+In this lab, you will learn how to deploy your AI application to Azure using the Azure Developer CLI (azd). You'll prepare your application for production, migrate from SQLite to PostgreSQL for better scalability, and deploy your application to Azure Container Apps.
+
+If you haven't completed the previous steps in the lab or are having trouble with your code, you can use the /src/complete folder which already includes all the necessary changes. The complete code has already been updated with the PostgreSQL configuration and external HTTP endpoints setup described in this section. You can skip directly to the "Set Up the Azure Developer CLI" section and deploy that code instead.
+
+Prepare for Production: Migrate from SQLite to PostgreSQL
+The first step in preparing for production is to upgrade our data storage from SQLite (which is great for development) to PostgreSQL (which is better suited for production workloads).
+
+Add PostgreSQL NuGet packages:
+
+Using Visual Studio's .NET Aspire tooling: For the GenAiLab.AppHost project:
+
+Right-click on the GenAiLab.AppHost project in Solution Explorer
+
+Select "Add" > ".NET Aspire package…"
+
+In the package manager that opens (with pre-filtered .NET Aspire packages), search for "Aspire.Hosting.PostgreSQL"
+
+Select "9.1.0" for the package version Important, don't skip this!
+
+Click "Install"
+
+For the GenAiLab.Web project:
+
+Right-click on the GenAiLab.Web project in Solution Explorer
+
+Select "Manage NuGet Packages…"
+
+Click on the "Browse" tab
+
+Search for "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL"
+
+Select "9.1.0" for the package version Important, don't skip this!
+
+Select the package and click "Install"
+
+Using Terminal: To open the terminal in Visual Studio:
+
+Go to "View" menu
+Select "Terminal" (or press Ctrl+`)
+Then run these commands:
+
+powershell
+   dotnet add GenAiLab.AppHost/GenAiLab.AppHost.csproj package Aspire.Hosting.PostgreSQL -v 9.1.0
+   dotnet add GenAiLab.Web/GenAiLab.Web.csproj package Aspire.Npgsql.EntityFrameworkCore.PostgreSQL -v 9.1.0
+Update AppHost Program.cs:
+
+Change the SQLite database references to PostgreSQL in GenAiLab.AppHost/Program.cs:
+
+csharp
+   // Replace these lines:
+   var ingestionCache = builder.AddSqlite("ingestionCache");
+   var productDb = builder.AddSqlite("productDb");
+
+   // With:
+   var postgres = builder.AddPostgres("postgres")
+       .WithLifetime(ContainerLifetime.Persistent);
+   var ingestionCache = postgres.AddDatabase("ingestionCache");
+   var productDb = postgres.AddDatabase("productDb");
+Update Web Project Database Context:
+
+In the GenAiLab.Web/Program.cs file, add a using statement for the new package (using Aspire.Npgsql.EntityFrameworkCore.PostgreSQL;), then update the database context registration:
+
+csharp
+   // Replace these lines:
+   builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
+   builder.AddSqliteDbContext<ProductDbContext>("productDb");
+
+   // With:
+   builder.AddNpgsqlDbContext<IngestionCacheDbContext>("ingestionCache");
+   builder.AddNpgsqlDbContext<ProductDbContext>("productDb");
+Test locally before deployment:
+
+Run the application locally to ensure the PostgreSQL migration works:
+
+powershell
+   dotnet run --project GenAiLab.AppHost/GenAiLab.AppHost.csproj
+Configure the web application for external access
+Before the web application is deployed to Azure Container Apps, you will need to configure it so that it is available via web browser. Update AppHost Program.cs to add the following line just before the call to builder.Build().Run(); at the end of the file:
+
+csharp
+  webApp.WithExternalHttpEndpoints();
+Set Up the Azure Developer CLI
+Install the Azure Developer CLI (azd):
+
+If you don't already have the Azure Developer CLI installed, you can install it with:
+
+powershell
+   winget install microsoft.azd
+Or using PowerShell:
+
+powershell
+   irm https://aka.ms/install-azd.ps1 | iex
+Close and re-open the terminal to make sure azd has been added to the path.
+
+Login to Azure:
+
+powershell
+   azd auth login
+Deploy to Azure Container Apps
+Ensure you are in the root directory which contains the solution file.
+
+Initialize your Azure environment:
+
+powershell
+   # Initialize the application for managment with azd
+   azd init
+When prompted with "How do you wnat to initializer your app?", select the default: "Use code in the current directory"
+
+After scanning the directory, azd prompts you to confirm that it found the correct .NET Aspire AppHost project. Select the Confirm and continue initializing my app option.
+
+When prompted to "Enter a unique environment name", enter "mygenaiapp" or choose something else if you would like.
+
+FOR BUILD 2025 LAB ATTENDEES: You MUST enter exactly "mygenaiapp" as your environment name. This is because azd will automatically add the "rg-" prefix when creating the resource group. The lab environment has already been configured with "rg-mygenaiapp" as the resource group, and permissions are restricted to only allow creating resources in this resource group.
+
+Provision Azure resources:
+powershell
+   azd provision
+This command creates all the necessary Azure resources, including:
+
+Resource group
+Container registry
+Container apps environment
+Container apps for your application
+Log Analytics workspace
+When provisioning resources with azd, it will automatically create a resource group with the prefix "rg-" added to your environment name (e.g., "rg-mygenaiapp"). For Build 2025 lab attendees, this is why it's essential to use exactly "mygenaiapp" as your environment name.
+
+When prompted to "Enter a value for the 'azureAISearch' infrastructure secured parameter, copy and past the value from your secrets.json file. It will begin with "Endpoint=" and end with your search key. Make sure that you grab your Azure AI Search connection string and not the Azure OpenAI connection string!
+
+When prompted to select a location, select "West US 3" for Build 2025 attendees (or another nearby Azure datacenter if you're following this lab outside of the conference).
+
+FOR BUILD 2025 LAB ATTENDEES: You MUST select "West US 3" as your location. This region has been pre-configured with the necessary quotas for your lab environment.
+
+When prompted to "Enter a value for the 'openai' infrastructure secured parameter, copy and past the value from your secrets.json file. As before, it will begin with "Endpoint=" and end with your Azure OpenAI key.
+
+Press enter and watch as your resources are provisioned! You can either just follow along in the terminal, or you can click on the link to watch the progress in the Azure portal. Provisioning should take roughly 5 minutes, but may take longer during conference events as multiple concurrent deployments can slow things down.
+
+Deploy your application code:
+
+powershell
+   azd deploy
+This command:
+
+Builds your .NET application
+
+Creates container images
+
+Pushes them to the Azure Container Registry
+
+Deploys them to Azure Container Apps
+
+This should take roughly 2 minutes, but may take longer under busy conditions.
+
+Access your deployed application:
+
+After deployment completes, you'll receive a URL to access your application in the terminal output. You can also view it using:
+
+powershell
+   azd show
+Manage Your Deployment
+Once deployed, you can manage your deployment using various Azure Developer CLI commands:
+
+View deployment information:
+powershell
+   azd show
+This command shows your deployment details, including endpoints and resource information. Launch the link for the aichatweb-app* service and verify that it is continuing to run as it did locally.
+
+Monitor your application:
+powershell
+   azd monitor
+This opens the Application Insights dashboard for your application, where you can view logs, metrics, and performance data.
+
+Update your deployment:
+
+After making changes to your application:
+
+powershell
+   azd deploy
+Delete your deployment:
+
+To completely clean up all resources when you're done:
+
+powershell
+   azd down --purge --force
+Production Considerations
+Security Best Practices
+Secure your API keys:
+
+Use Azure Key Vault for storing API keys and secrets
+Never hardcode keys in your application code
+Rotate keys periodically
+Implement proper authentication and authorization:
+
+Add authentication to your application
+Protect API endpoints
+Consider identity providers like Azure AD
+Use HTTPS everywhere:
+
+Enable HTTPS for all endpoints
+Configure proper CORS policies
+Scaling and Performance
+Configure scaling rules in Azure Container Apps:
+
+Set minimum and maximum replicas
+Configure scaling metrics based on load
+Implement caching for AI responses:
+
+Use distributed caching (Redis)
+Cache common AI-generated content
+Optimize network communication:
+
+Use gRPC for internal service communication
+Configure appropriate timeouts
+Cost Management
+Monitor AI service usage:
+
+Track token usage with telemetry
+Set up cost alerts and budgets
+Optimize embedding generation:
+
+Only generate embeddings when necessary
+Cache embedding results
+Configure appropriate instance sizes:
+
+Start with smaller instances and scale up as needed
+Use autoscaling to optimize costs
+What You've Learned
+How to migrate from SQLite to PostgreSQL for production readiness
+How to use the Azure Developer CLI (azd) to deploy your AI application
+How to set up and configure Azure Container Apps
+How to manage and monitor your deployed application
+Best practices for security, scaling, and cost management in production
+Conclusion
+Congratulations! You've completed all parts of the AI Web Chat template lab. You now have the knowledge to:
+
+Create AI applications using the AI Web Chat template
+Understand and customize the template code structure
+Migrate from GitHub Models to Azure OpenAI
+Implement AI-powered features like the Products page
+Deploy your application to production environments using Azure
+Continue exploring the possibilities of AI with .NET and build amazing AI-powered applications!
+
+Congratulations!
+Congratulations on finishing this Lab from Microsoft Build 2025.
+
+✅ Application deployed! Click Next for final insights and next steps.
+
+
+Building GenAI Apps in C#: AI Templates, GitHub Models, Azure OpenAI & More
+28 Minutes Remaining 
+Conclusions
+Congratulations! You've successfully explored the intersection of .NET and generative AI technologies with multiple models.
+
+To continue your AI development journey, we recommend these valuable resources:
+
+.NET AI documentation and AI templates for .NET: Comprehensive guides and samples for building AI-enabled applications as a .NET developer.
+Microsoft Extensions for AI: Explore the toolkit that simplifies AI integration in your applications.
+Azure OpenAI Service: Learn more about deploying enterprise-grade AI solutions with Azure OpenAI.
+The skills you've acquired today represent the cutting edge of AI development practices currently transforming industries worldwide. You're now equipped to implement these powerful capabilities in your own projects and organizations.
+
+Thank you for participating in this experience, learn more at Microsoft Build 2025!
