@@ -1,3 +1,5 @@
+LAB343: Modernizing .NET using Azure Migrate and GitHub Copilot tools
+
 Modernizing .NET using Azure Migrate and GitHub Copilot tools
 1 Hr 57 Min Remaining 
 Modernizing .NET using Azure Migrate and GitHub Copilot tools
