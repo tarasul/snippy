@@ -382,3 +382,7 @@ Explored how custom instructions and prompt files can guide Copilot to follow yo
 Used Copilot Agent Mode to implement new features, coordinate changes across backend and frontend code, and automate repetitive tasks. You used GitHub Copilot to implement a new category and publisher filter for the game listing page, making changes across the client, backend, and the resulting tests.
 Experienced Copilot as a peer programmer, being assigned issues and working collaboratively on pull requests. You assigned Copilot to issues in your backlog, allowing it to create a pull request, build a plan, implement changes, and iterate further as you provided feedback.
 This is just the beginning, and we can't wait to see how you use Copilot to help you with your own projects. We hope you enjoyed the lab, and we look forward to seeing you in the next one! Happy coding!
+
+
+
+
